@@ -1,4 +1,3 @@
-# encoding: utf-8
 """
 @author:  liaoxingyu
 @contact: sherlockliao01@gmail.com
@@ -6,8 +5,8 @@
 
 import torch.nn.functional as F
 
-from .triplet_loss import TripletLoss, CrossEntropyLabelSmooth
 from .center_loss import CenterLoss
+from .triplet_loss import CrossEntropyLabelSmooth, TripletLoss
 
 
 def make_loss(cfg, num_classes):    # modified by gu
@@ -47,6 +46,10 @@ def make_loss(cfg, num_classes):    # modified by gu
 def make_loss_with_center(cfg, num_classes):    # modified by gu
     if cfg.MODEL.NAME == 'resnet18' or cfg.MODEL.NAME == 'resnet34':
         feat_dim = 512
+    elif cfg.MODEL.NAME == 'deit_small':
+        feat_dim = 384
+    elif cfg.MODEL.NAME == 'deit_base':
+        feat_dim = 768
     else:
         feat_dim = 2048
 
@@ -68,21 +71,15 @@ def make_loss_with_center(cfg, num_classes):    # modified by gu
     def loss_func(score, feat, target):
         if cfg.MODEL.METRIC_LOSS_TYPE == 'center':
             if cfg.MODEL.IF_LABELSMOOTH == 'on':
-                return xent(score, target) + \
-                        cfg.SOLVER.CENTER_LOSS_WEIGHT * center_criterion(feat, target)
+                return xent(score, target) + cfg.SOLVER.CENTER_LOSS_WEIGHT * center_criterion(feat, target)
             else:
-                return F.cross_entropy(score, target) + \
-                        cfg.SOLVER.CENTER_LOSS_WEIGHT * center_criterion(feat, target)
+                return F.cross_entropy(score, target) + cfg.SOLVER.CENTER_LOSS_WEIGHT * center_criterion(feat, target)
 
         elif cfg.MODEL.METRIC_LOSS_TYPE == 'triplet_center':
             if cfg.MODEL.IF_LABELSMOOTH == 'on':
-                return xent(score, target) + \
-                        triplet(feat, target)[0] + \
-                        cfg.SOLVER.CENTER_LOSS_WEIGHT * center_criterion(feat, target)
+                return xent(score, target) + triplet(feat, target)[0] + cfg.SOLVER.CENTER_LOSS_WEIGHT * center_criterion(feat, target)
             else:
-                return F.cross_entropy(score, target) + \
-                        triplet(feat, target)[0] + \
-                        cfg.SOLVER.CENTER_LOSS_WEIGHT * center_criterion(feat, target)
+                return F.cross_entropy(score, target) + triplet(feat, target)[0] + cfg.SOLVER.CENTER_LOSS_WEIGHT * center_criterion(feat, target)
 
         else:
             print('expected METRIC_LOSS_TYPE with center should be center, triplet_center'

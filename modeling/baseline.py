@@ -150,8 +150,12 @@ class Baseline(nn.Module):
         elif model_name == "resnet50_ibn_a":
             self.base = resnet50_ibn_a(last_stride)
 
-        if model_name == "deit":
-            self.base = deit()
+        if model_name == "deit_small":
+            self.base = deit("vit_deit_small_patch16_224")
+            self.gap = None
+            self.in_planes = self.base.embed_dim
+        elif model_name == "deit_base":
+            self.base = deit("vit_deit_base_patch16_224")
             self.gap = None
             self.in_planes = self.base.embed_dim
         else:
@@ -205,7 +209,7 @@ class Baseline(nn.Module):
                 return global_feat
 
     def load_param(self, trained_path):
-        param_dict = torch.load(trained_path)
+        param_dict = torch.load(trained_path).state_dict()
         for i in param_dict:
             if "classifier" in i:
                 continue

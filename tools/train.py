@@ -1,4 +1,3 @@
-# encoding: utf-8
 """
 @author:  sherlock
 @contact: sherlockliao01@gmail.com
@@ -7,19 +6,20 @@
 import argparse
 import os
 import sys
-import torch
 
+import torch
 from torch.backends import cudnn
 
-sys.path.append('.')
 from config import cfg
 from data import make_data_loader
 from engine.trainer import do_train, do_train_with_center
-from modeling import build_model
 from layers import make_loss, make_loss_with_center
-from solver import make_optimizer, make_optimizer_with_center, WarmupMultiStepLR
-
+from modeling import build_model
+from solver import (WarmupMultiStepLR, make_optimizer,
+                    make_optimizer_with_center)
 from utils.logger import setup_logger
+
+sys.path.append('.')
 
 
 def train(cfg):
@@ -54,8 +54,6 @@ def train(cfg):
         else:
             print('Only support pretrain_choice for imagenet and self, but got {}'.format(cfg.MODEL.PRETRAIN_CHOICE))
 
-        arguments = {}
-
         do_train(
             cfg,
             model,
@@ -74,8 +72,6 @@ def train(cfg):
         # scheduler = WarmupMultiStepLR(optimizer, cfg.SOLVER.STEPS, cfg.SOLVER.GAMMA, cfg.SOLVER.WARMUP_FACTOR,
         #                               cfg.SOLVER.WARMUP_ITERS, cfg.SOLVER.WARMUP_METHOD)
 
-        arguments = {}
-
         # Add for using self trained model
         if cfg.MODEL.PRETRAIN_CHOICE == 'self':
             start_epoch = eval(cfg.MODEL.PRETRAIN_PATH.split('/')[-1].split('.')[0].split('_')[-1])
@@ -92,12 +88,10 @@ def train(cfg):
             optimizer_center.load_state_dict(torch.load(path_to_optimizer_center))
             scheduler = WarmupMultiStepLR(optimizer, cfg.SOLVER.STEPS, cfg.SOLVER.GAMMA, cfg.SOLVER.WARMUP_FACTOR,
                                           cfg.SOLVER.WARMUP_ITERS, cfg.SOLVER.WARMUP_METHOD, start_epoch)
-        elif cfg.MODEL.PRETRAIN_CHOICE == 'imagenet':
+        else:
             start_epoch = 0
             scheduler = WarmupMultiStepLR(optimizer, cfg.SOLVER.STEPS, cfg.SOLVER.GAMMA, cfg.SOLVER.WARMUP_FACTOR,
                                           cfg.SOLVER.WARMUP_ITERS, cfg.SOLVER.WARMUP_METHOD)
-        else:
-            print('Only support pretrain_choice for imagenet and self, but got {}'.format(cfg.MODEL.PRETRAIN_CHOICE))
 
         do_train_with_center(
             cfg,

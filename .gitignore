@@ -2,6 +2,7 @@
 data/market1501
 data/dukemtmc-reid
 log/
+output_*/
 saved-models/
 train_imagenet.py
 .idea/
