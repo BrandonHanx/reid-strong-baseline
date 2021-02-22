@@ -45,7 +45,8 @@ def create_supervised_trainer(model, optimizer, loss_fn, device=None):
         score, feat = model(img)
         if isinstance(feat, list):
             loss = [loss_fn(x, y, target) for x, y in zip(score, feat)]
-            loss = loss[0] + loss[1:].mean()
+            loss = loss[0] + torch.stack(loss[1:]).mean()
+            score = score[0]
         else:
             loss = loss_fn(score, feat, target)
         loss.backward()
@@ -94,7 +95,8 @@ def create_supervised_trainer_with_center(
         score, feat = model(img)
         if isinstance(feat, list):
             loss = [loss_fn(x, y, target) for x, y in zip(score, feat)]
-            loss = loss[0] + loss[1:].mean()
+            loss = loss[0] + torch.stack(loss[1:]).mean()
+            score = score[0]
         else:
             loss = loss_fn(score, feat, target)
         # print("Total loss is {}, center loss is {}".format(loss, center_criterion(feat, target)))
