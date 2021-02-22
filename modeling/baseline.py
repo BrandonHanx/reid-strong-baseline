@@ -158,6 +158,10 @@ class Baseline(nn.Module):
             self.base = deit("vit_deit_base_patch16_224")
             self.gap = None
             self.in_planes = self.base.embed_dim
+        elif model_name == "deit_jpm_small":
+            self.base = deit("deit_jpm_small_patch16_224")
+            self.gap = None
+            self.in_planes = self.base.vit.embed_dim
         else:
             self.gap = nn.AdaptiveAvgPool2d(1)
             # self.gap = nn.AdaptiveMaxPool2d(1)
@@ -192,21 +196,35 @@ class Baseline(nn.Module):
         else:
             global_feat = self.base(x)
 
+        jpm = False
+        if isinstance(global_feat, list):
+            jpm = True
+
         if self.neck == "no":
             feat = global_feat
         elif self.neck == "bnneck":
-            feat = self.bottleneck(global_feat)  # normalize for angular softmax
+            if jpm:
+                feat = [self.bottleneck(x) for x in global_feat]
+            else:
+                feat = self.bottleneck(global_feat)  # normalize for angular softmax
 
         if self.training:
-            cls_score = self.classifier(feat)
-            return cls_score, global_feat  # global feature for triplet loss
-        else:
-            if self.neck_feat == "after":
-                # print("Test with feature after BN")
-                return feat
+            if jpm:
+                cls_score = [self.classifier(x) for x in feat]
             else:
-                # print("Test with feature before BN")
-                return global_feat
+                cls_score = self.classifier(feat)
+            return cls_score, global_feat  # global feature for triplet loss
+
+        if self.neck_feat == "after":
+            # print("Test with feature after BN")
+            if jpm:
+                return torch.stack(feat, dim=1)
+            return feat
+
+        # print("Test with feature before BN")
+        if jpm:
+            return torch.stack(global_feat, dim=1)
+        return global_feat
 
     def load_param(self, trained_path):
         param_dict = torch.load(trained_path).state_dict()

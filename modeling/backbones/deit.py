@@ -1,6 +1,8 @@
+import copy
 import math
 from functools import partial
 
+import numpy as np
 import timm.models.vision_transformer as ViTcls
 import torch
 import torch.nn.functional as F
@@ -11,7 +13,6 @@ class ViT(ViTcls.VisionTransformer):
     def __init__(self, mode, **kwargs):
         super().__init__(**kwargs)
         self.mode = mode
-        self.out_channels = self.embed_dim
 
     def forward(self, x):
         B = x.shape[0]
@@ -21,6 +22,11 @@ class ViT(ViTcls.VisionTransformer):
         x = torch.cat((cls_tokens, x), dim=1)
         x = x + self.pos_embed
         x = self.pos_drop(x)
+
+        if self.mode == "jpm":
+            for blk in self.blocks[:-1]:
+                x = blk(x)
+            return x
 
         for blk in self.blocks:
             x = blk(x)
@@ -33,12 +39,42 @@ class ViT(ViTcls.VisionTransformer):
             return x[:, 1:].mean(dim=1)
         return NotImplementedError
 
-    def load_param(self, model_path):
-        param_dict = torch.load(model_path)
-        for i in param_dict:
-            if "fc" in i:
-                continue
-            self.state_dict()[i].copy_(param_dict[i])
+
+class ViTWithJPM(torch.nn.Module):
+    def __init__(self, vit, shift_offset=5, shuffle_group=4):
+        super().__init__()
+        self.vit = vit
+        self.jpm = copy.deepcopy(
+            self.vit.blocks[-1]
+        )  # initialize the weight same as last layer
+        self.shift_offset = shift_offset
+        self.shuffle_group = shuffle_group
+
+    def forward(self, x):
+        x = self.vit(x)
+        global_feat = self.vit.blocks[-1](x)
+        global_feat = self.vit.norm(global_feat)[:, 0]
+
+        cls_token = x[:, 0]
+        feat_len = x.shape[1]
+
+        local_feat = torch.stack(
+            x[:, self.shift_offset + 1 : -1], x[:, 1 : self.shift_offset + 1], dim=1
+        )  # shift
+        random_idx = list(np.random.permutation(feat_len))
+        local_feat = local_feat[:, random_idx]  # shuffle
+
+        jpm_feats = [global_feat]
+        group_idxs = np.linspace(0, feat_len, self.shuffle_group + 1)
+        for i in range(len(group_idxs) - 1):
+            feat = torch.stack(
+                cls_token, local_feat[:, group_idxs[i] : group_idxs[i + 1]], dim=1
+            )
+            feat = self.jpm(feat)
+            feat = self.vit.norm(feat)
+            jpm_feats.append(feat[:, 0])
+
+        return jpm_feats
 
 
 def resize_pos_embed(posemb, posemb_new, gs_new):
@@ -73,7 +109,7 @@ def checkpoint_filter_fn(state_dict, model, gs_new):
     return out_dict
 
 
-def _create_vit(variant, mode, img_size, pretrained, patch_size, **kwargs):
+def create_vit(variant, mode, img_size, pretrained, patch_size, **kwargs):
     model = ViT(mode=mode, img_size=img_size, **kwargs)
     model.default_cfg = ViTcls.default_cfgs[variant]
     gs_new = (int(img_size[0] / patch_size), int(img_size[1] / patch_size))
@@ -95,7 +131,14 @@ model_archs["vit_deit_base_patch16_224"] = dict(
 
 
 def deit(arch="vit_deit_small_patch16_224"):
+    if arch == "deit_jpm_small_patch16_224":
+        arch = "vit_deit_small_patch16_224"
+        model_arch = model_archs[arch]
+        vit = create_vit(
+            variant=arch, mode="jpm", img_size=(256, 128), pretrained=True, **model_arch
+        )
+        return ViTWithJPM(vit)
     model_arch = model_archs[arch]
-    return _create_vit(
+    return create_vit(
         variant=arch, mode="first", img_size=(256, 128), pretrained=True, **model_arch
     )
