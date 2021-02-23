@@ -129,6 +129,9 @@ model_archs["vit_deit_small_patch16_224"] = dict(
 model_archs["vit_deit_base_patch16_224"] = dict(
     patch_size=16, embed_dim=768, depth=12, num_heads=12
 )
+model_archs["vit_base_patch16_224"] = dict(
+    patch_size=16, embed_dim=768, depth=12, num_heads=12
+)
 
 
 def deit(arch="vit_deit_small_patch16_224"):

@@ -128,6 +128,8 @@ _C.SOLVER.WARMUP_ITERS = 500
 # method of warm up, option: 'constant','linear'
 _C.SOLVER.WARMUP_METHOD = "linear"
 
+_C.SOLVER.MODE = "step"
+
 # epoch number of saving checkpoints
 _C.SOLVER.CHECKPOINT_PERIOD = 50
 # iteration of display training log

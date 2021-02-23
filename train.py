@@ -51,7 +51,9 @@ def train(cfg):
                 cfg.SOLVER.WARMUP_FACTOR,
                 cfg.SOLVER.WARMUP_ITERS,
                 cfg.SOLVER.WARMUP_METHOD,
-                start_epoch,
+                cfg.SOLVER.MODE,
+                cfg.SOLVER.MAX_EPOCHS,
+                start_epoch
             )
         elif cfg.MODEL.PRETRAIN_CHOICE == "imagenet":
             start_epoch = 0
@@ -62,6 +64,8 @@ def train(cfg):
                 cfg.SOLVER.WARMUP_FACTOR,
                 cfg.SOLVER.WARMUP_ITERS,
                 cfg.SOLVER.WARMUP_METHOD,
+                cfg.SOLVER.MODE,
+                cfg.SOLVER.MAX_EPOCHS
             )
         else:
             print(
@@ -121,6 +125,8 @@ def train(cfg):
                 cfg.SOLVER.WARMUP_FACTOR,
                 cfg.SOLVER.WARMUP_ITERS,
                 cfg.SOLVER.WARMUP_METHOD,
+                cfg.SOLVER.MODE,
+                cfg.SOLVER.MAX_EPOCHS,
                 start_epoch,
             )
         else:
@@ -132,6 +138,8 @@ def train(cfg):
                 cfg.SOLVER.WARMUP_FACTOR,
                 cfg.SOLVER.WARMUP_ITERS,
                 cfg.SOLVER.WARMUP_METHOD,
+                cfg.SOLVER.MODE,
+                cfg.SOLVER.MAX_EPOCHS,
             )
 
         do_train_with_center(
