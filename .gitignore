@@ -1,6 +1,7 @@
 # Custom
 data/market1501
 data/dukemtmc-reid
+data/msmt17
 log/
 output_*/
 saved-models/

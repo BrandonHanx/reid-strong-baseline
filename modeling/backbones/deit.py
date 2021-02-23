@@ -47,7 +47,7 @@ class ViTWithJPM(torch.nn.Module):
         self.jpm = copy.deepcopy(
             self.vit.blocks[-1]
         )  # initialize the weight same as last layer
-        self.jpm_nrom = copy.deepcopy(self.vit.norm)
+        self.jpm_norm = copy.deepcopy(self.vit.norm)
         self.shift_offset = shift_offset
         self.shuffle_group = shuffle_group
 
