@@ -46,7 +46,7 @@ def make_loss(cfg, num_classes):    # modified by gu
 def make_loss_with_center(cfg, num_classes):    # modified by gu
     if cfg.MODEL.NAME == 'resnet18' or cfg.MODEL.NAME == 'resnet34':
         feat_dim = 512
-    elif cfg.MODEL.NAME == 'deit_small':
+    elif cfg.MODEL.NAME == 'deit_small' or cfg.MODEL.NAME == 'deit_small_jpm':
         feat_dim = 384
     elif cfg.MODEL.NAME == 'deit_base':
         feat_dim = 768

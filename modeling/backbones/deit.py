@@ -55,20 +55,20 @@ class ViTWithJPM(torch.nn.Module):
         global_feat = self.vit.blocks[-1](x)
         global_feat = self.vit.norm(global_feat)[:, 0]
 
-        cls_token = x[:, 0]
-        feat_len = x.shape[1]
+        cls_token = x[:, 0].unsqueeze(dim=1)
+        feat_len = x.shape[1] - 1
 
-        local_feat = torch.stack(
-            x[:, self.shift_offset + 1 : -1], x[:, 1 : self.shift_offset + 1], dim=1
+        local_feat = torch.cat(
+            [x[:, self.shift_offset + 1:], x[:, 1 : self.shift_offset + 1]], dim=1
         )  # shift
         random_idx = list(np.random.permutation(feat_len))
         local_feat = local_feat[:, random_idx]  # shuffle
 
         jpm_feats = [global_feat]
-        group_idxs = np.linspace(0, feat_len, self.shuffle_group + 1)
+        group_idxs = np.linspace(0, feat_len, self.shuffle_group + 1, dtype=int)
         for i in range(len(group_idxs) - 1):
-            feat = torch.stack(
-                cls_token, local_feat[:, group_idxs[i] : group_idxs[i + 1]], dim=1
+            feat = torch.cat(
+                [cls_token, local_feat[:, group_idxs[i] : group_idxs[i + 1]]], dim=1
             )
             feat = self.jpm(feat)
             feat = self.vit.norm(feat)

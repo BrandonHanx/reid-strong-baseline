@@ -158,7 +158,7 @@ class Baseline(nn.Module):
             self.base = deit("vit_deit_base_patch16_224")
             self.gap = None
             self.in_planes = self.base.embed_dim
-        elif model_name == "deit_jpm_small":
+        elif model_name == "deit_small_jpm":
             self.base = deit("deit_jpm_small_patch16_224")
             self.gap = None
             self.in_planes = self.base.vit.embed_dim
@@ -218,12 +218,12 @@ class Baseline(nn.Module):
         if self.neck_feat == "after":
             # print("Test with feature after BN")
             if jpm:
-                return torch.stack(feat, dim=1)
+                return torch.cat(feat, dim=1)
             return feat
 
         # print("Test with feature before BN")
         if jpm:
-            return torch.stack(global_feat, dim=1)
+            return torch.cat(global_feat, dim=1)
         return global_feat
 
     def load_param(self, trained_path):
