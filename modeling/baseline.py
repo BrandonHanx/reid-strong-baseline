@@ -218,12 +218,12 @@ class Baseline(nn.Module):
         if self.neck_feat == "after":
             # print("Test with feature after BN")
             if jpm:
-                return torch.cat(feat, dim=1)
+                return feat[0]
             return feat
 
         # print("Test with feature before BN")
         if jpm:
-            return torch.cat(global_feat, dim=1)
+            return global_feat[0]
         return global_feat
 
     def load_param(self, trained_path):
