@@ -48,7 +48,7 @@ def make_loss_with_center(cfg, num_classes):    # modified by gu
         feat_dim = 512
     elif cfg.MODEL.NAME == 'deit_small' or cfg.MODEL.NAME == 'deit_small_jpm':
         feat_dim = 384
-    elif cfg.MODEL.NAME == 'deit_base':
+    elif cfg.MODEL.NAME == 'deit_base' or cfg.MODEL.NAME == 'vit_base':
         feat_dim = 768
     else:
         feat_dim = 2048

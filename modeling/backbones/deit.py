@@ -85,7 +85,7 @@ def resize_pos_embed(posemb, posemb_new, gs_new):
     gs_old = int(math.sqrt(len(posemb_grid)))
     posemb_grid = posemb_grid.reshape(1, gs_old, gs_old, -1).permute(0, 3, 1, 2)
     posemb_grid = F.interpolate(
-        posemb_grid, size=gs_new, mode="bilinear", align_corners=True
+        posemb_grid, size=gs_new, mode="bilinear", align_corners=False
     )
     posemb_grid = posemb_grid.permute(0, 2, 3, 1).reshape(1, gs_new[0] * gs_new[1], -1)
     posemb = torch.cat([posemb_tok, posemb_grid], dim=1)

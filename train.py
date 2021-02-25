@@ -55,7 +55,7 @@ def train(cfg):
                 cfg.SOLVER.MAX_EPOCHS,
                 start_epoch
             )
-        elif cfg.MODEL.PRETRAIN_CHOICE == "imagenet":
+        else:
             start_epoch = 0
             scheduler = WarmupMultiStepLR(
                 optimizer,
@@ -66,12 +66,6 @@ def train(cfg):
                 cfg.SOLVER.WARMUP_METHOD,
                 cfg.SOLVER.MODE,
                 cfg.SOLVER.MAX_EPOCHS
-            )
-        else:
-            print(
-                "Only support pretrain_choice for imagenet and self, but got {}".format(
-                    cfg.MODEL.PRETRAIN_CHOICE
-                )
             )
 
         do_train(
