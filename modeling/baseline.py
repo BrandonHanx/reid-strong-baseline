@@ -159,7 +159,7 @@ class Baseline(nn.Module):
             self.gap = None
             self.in_planes = self.base.embed_dim
         elif model_name == "vit_base":
-            self.base = deit("vit_base_patch16_224")
+            self.base = deit("vit_base_patch16_224_in21k")
             self.gap = None
             self.in_planes = self.base.embed_dim
         elif model_name == "deit_small_jpm":
