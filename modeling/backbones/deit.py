@@ -60,7 +60,7 @@ class ViTWithJPM(torch.nn.Module):
         feat_len = x.shape[1] - 1
 
         local_feat = torch.cat(
-            [x[:, self.shift_offset + 1:], x[:, 1 : self.shift_offset + 1]], dim=1
+            [x[:, self.shift_offset + 1 :], x[:, 1 : self.shift_offset + 1]], dim=1
         )  # shift
         random_idx = list(np.random.permutation(feat_len))
         local_feat = local_feat[:, random_idx]  # shuffle
@@ -137,6 +137,13 @@ model_archs["vit_base_patch16_224_in21k"] = dict(
 def deit(arch="vit_deit_small_patch16_224"):
     if arch == "deit_jpm_small_patch16_224":
         arch = "vit_deit_small_patch16_224"
+        model_arch = model_archs[arch]
+        vit = create_vit(
+            variant=arch, mode="jpm", img_size=(256, 128), pretrained=True, **model_arch
+        )
+        return ViTWithJPM(vit)
+    elif arch == "vit_jpm_base_patch16_224_in21k":
+        arch = "vit_base_patch16_224_in21k"
         model_arch = model_archs[arch]
         vit = create_vit(
             variant=arch, mode="jpm", img_size=(256, 128), pretrained=True, **model_arch

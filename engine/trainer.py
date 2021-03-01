@@ -198,7 +198,7 @@ def do_train(
     def start_training(engine):
         engine.state.epoch = start_epoch
 
-    @trainer.on(Events.EPOCH_STARTED)
+    @trainer.on(Events.EPOCH_COMPLETED)
     def adjust_learning_rate(engine):
         scheduler.step()
 
